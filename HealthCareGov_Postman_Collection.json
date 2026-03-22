@@ -1,0 +1,842 @@
+{
+  "info": {
+    "name": "HealthCareGov MVP API",
+    "description": "Complete Postman collection for the HealthCareGov Public Healthcare & Hospital Management System.\n\n## How to use\n1. Import this collection into Postman\n2. Set the collection variable `base_url` to `http://localhost:9090`\n3. Run requests in the order shown — start with '00 Setup' folder\n4. After login, the token is auto-saved to `{{jwt_token}}` via the test script\n5. All authenticated requests automatically use `{{jwt_token}}`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",    "value": "http://localhost:9090", "type": "string" },
+    { "key": "jwt_token",   "value": "",                       "type": "string" },
+    { "key": "admin_token", "value": "",                       "type": "string" },
+    { "key": "doctor_token","value": "",                       "type": "string" },
+    { "key": "patient_token","value": "",                      "type": "string" }
+  ],
+  "item": [
+
+    {
+      "name": "00 · Setup (Run First)",
+      "description": "Register all users, approve them, then login. Run these in order on a fresh database.",
+      "item": [
+        {
+          "name": "1. Register Admin",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('admin_id', pm.response.json().userID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "{{base_url}}/api/users/register"},
+            "body": {"mode": "raw", "raw": "{\n  \"name\":     \"System Admin\",\n  \"role\":     \"Admin\",\n  \"email\":    \"admin@hcg.com\",\n  \"phone\":    \"9000000001\",\n  \"password\": \"admin123\"\n}"}
+          }
+        },
+        {
+          "name": "2. Register Doctor",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('doctor_id', pm.response.json().userID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "{{base_url}}/api/users/register"},
+            "body": {"mode": "raw", "raw": "{\n  \"name\":     \"Dr. Priya Sharma\",\n  \"role\":     \"Doctor\",\n  \"email\":    \"doctor@hcg.com\",\n  \"phone\":    \"9000000002\",\n  \"password\": \"doc123\"\n}"}
+          }
+        },
+        {
+          "name": "3. Register Compliance Officer",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('compliance_id', pm.response.json().userID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "{{base_url}}/api/users/register"},
+            "body": {"mode": "raw", "raw": "{\n  \"name\":     \"Compliance Officer\",\n  \"role\":     \"Compliance\",\n  \"email\":    \"comp@hcg.com\",\n  \"phone\":    \"9000000003\",\n  \"password\": \"comp123\"\n}"}
+          }
+        },
+        {
+          "name": "4. Register Auditor",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('auditor_id', pm.response.json().userID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "{{base_url}}/api/users/register"},
+            "body": {"mode": "raw", "raw": "{\n  \"name\":     \"Government Auditor\",\n  \"role\":     \"Auditor\",\n  \"email\":    \"audit@hcg.com\",\n  \"phone\":    \"9000000004\",\n  \"password\": \"aud123\"\n}"}
+          }
+        },
+        {
+          "name": "5. Register Program Manager",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('manager_id', pm.response.json().userID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "{{base_url}}/api/users/register"},
+            "body": {"mode": "raw", "raw": "{\n  \"name\":     \"Program Manager\",\n  \"role\":     \"Manager\",\n  \"email\":    \"manager@hcg.com\",\n  \"phone\":    \"9000000005\",\n  \"password\": \"mgr123\"\n}"}
+          }
+        },
+        {
+          "name": "6. Register Patient",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('patient_id', pm.response.json().patientID); pm.collectionVariables.set('patient_user_id', pm.response.json().userID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "{{base_url}}/api/patients/register"},
+            "body": {"mode": "raw", "raw": "{\n  \"name\":        \"Ravi Kumar\",\n  \"dob\":         \"1990-05-15\",\n  \"gender\":      \"Male\",\n  \"address\":     \"42 Gandhi Nagar, Chennai\",\n  \"contactInfo\": \"9876543210\",\n  \"email\":       \"patient@hcg.com\",\n  \"password\":    \"pat123\"\n}"}
+          }
+        },
+        {
+          "name": "7. Admin Login (saves token)",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 200) { var r = pm.response.json(); pm.collectionVariables.set('jwt_token', r.token); pm.collectionVariables.set('admin_token', r.token); console.log('Admin token saved'); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "{{base_url}}/api/users/login"},
+            "body": {"mode": "raw", "raw": "{\n  \"email\":    \"admin@hcg.com\",\n  \"password\": \"admin123\"\n}"}
+          }
+        },
+        {
+          "name": "8. Approve Doctor",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/users/{{doctor_id}}/status?adminId=1"},
+            "body": {"mode": "raw", "raw": "{\n  \"status\": \"Active\"\n}"}
+          }
+        },
+        {
+          "name": "9. Approve Compliance Officer",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/users/{{compliance_id}}/status?adminId=1"},
+            "body": {"mode": "raw", "raw": "{\n  \"status\": \"Active\"\n}"}
+          }
+        },
+        {
+          "name": "10. Approve Auditor",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/users/{{auditor_id}}/status?adminId=1"},
+            "body": {"mode": "raw", "raw": "{\n  \"status\": \"Active\"\n}"}
+          }
+        },
+        {
+          "name": "11. Approve Program Manager",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/users/{{manager_id}}/status?adminId=1"},
+            "body": {"mode": "raw", "raw": "{\n  \"status\": \"Active\"\n}"}
+          }
+        },
+        {
+          "name": "12. Approve Patient",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/users/{{patient_user_id}}/status?adminId=1"},
+            "body": {"mode": "raw", "raw": "{\n  \"status\": \"Active\"\n}"}
+          }
+        },
+        {
+          "name": "13. Doctor Login (saves token)",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 200) { pm.collectionVariables.set('doctor_token', pm.response.json().token); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "{{base_url}}/api/users/login"},
+            "body": {"mode": "raw", "raw": "{\n  \"email\":    \"doctor@hcg.com\",\n  \"password\": \"doc123\"\n}"}
+          }
+        },
+        {
+          "name": "14. Patient Login (saves token)",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 200) { var r = pm.response.json(); pm.collectionVariables.set('patient_token', r.token); pm.collectionVariables.set('patient_id', r.patientID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "{{base_url}}/api/users/login"},
+            "body": {"mode": "raw", "raw": "{\n  \"email\":    \"patient@hcg.com\",\n  \"password\": \"pat123\"\n}"}
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "01 · User Management",
+      "item": [
+        {
+          "name": "List All Users",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/users"}
+          }
+        },
+        {
+          "name": "List Pending Users",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/users?status=Pending"}
+          }
+        },
+        {
+          "name": "Deactivate User",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/users/{{doctor_id}}/status?adminId=1"},
+            "body": {"mode": "raw", "raw": "{\n  \"status\": \"Inactive\"\n}"}
+          }
+        },
+        {
+          "name": "Reactivate User",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/users/{{doctor_id}}/status?adminId=1"},
+            "body": {"mode": "raw", "raw": "{\n  \"status\": \"Active\"\n}"}
+          }
+        },
+        {
+          "name": "Reject User",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/users/99/status?adminId=1"},
+            "body": {"mode": "raw", "raw": "{\n  \"status\": \"Rejected\"\n}"}
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/users/logout/1"}
+          }
+        },
+        {
+          "name": "[Security] 401 - No Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/api/users"},
+            "description": "Expected: 401 Unauthorized"
+          }
+        },
+        {
+          "name": "[Security] 403 - Wrong Role (Doctor tries admin endpoint)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/users"},
+            "description": "Expected: 403 Forbidden"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "02 · Patient Profile",
+      "item": [
+        {
+          "name": "View Own Profile",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{base_url}}/api/patients/{{patient_id}}"}
+          }
+        },
+        {
+          "name": "Update Own Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{base_url}}/api/patients/{{patient_id}}"},
+            "body": {"mode": "raw", "raw": "{\n  \"address\":     \"99 New Street, Chennai\",\n  \"contactInfo\": \"9000011111\"\n}"}
+          }
+        },
+        {
+          "name": "Upload Document",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{base_url}}/api/patients/documents"},
+            "body": {"mode": "raw", "raw": "{\n  \"patientID\": {{patient_id}},\n  \"docType\":   \"IDProof\",\n  \"fileURI\":   \"/uploads/patient1/aadhar.pdf\"\n}"}
+          }
+        },
+        {
+          "name": "Upload Health Card",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{base_url}}/api/patients/documents"},
+            "body": {"mode": "raw", "raw": "{\n  \"patientID\": {{patient_id}},\n  \"docType\":   \"HealthCard\",\n  \"fileURI\":   \"/uploads/patient1/healthcard.jpg\"\n}"}
+          }
+        },
+        {
+          "name": "View Treatment History",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{base_url}}/api/patients/{{patient_id}}/history"}
+          }
+        },
+        {
+          "name": "View Medical Summary",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{base_url}}/api/patients/{{patient_id}}/summary"}
+          }
+        },
+        {
+          "name": "Doctor Views Patient Profile",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/patients/{{patient_id}}"}
+          }
+        },
+        {
+          "name": "[Security] 400 - Patient Views Another Patient",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{base_url}}/api/patients/999"},
+            "description": "Expected: 400 — Access denied: you may only view profile for your own account"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "03 · Hospitals",
+      "item": [
+        {
+          "name": "Add Hospital",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('hospital_id', pm.response.json().hospitalID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/hospitals"},
+            "body": {"mode": "raw", "raw": "{\n  \"name\":     \"City General Hospital\",\n  \"location\": \"Chennai\",\n  \"capacity\": 500,\n  \"status\":   \"Active\"\n}"}
+          }
+        },
+        {
+          "name": "List All Hospitals",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/hospitals"}
+          }
+        },
+        {
+          "name": "Get Hospital by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/hospitals/{{hospital_id}}"}
+          }
+        },
+        {
+          "name": "Search Hospitals",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/hospitals/search?query=Chennai"}
+          }
+        },
+        {
+          "name": "Edit Hospital",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/hospitals/{{hospital_id}}"},
+            "body": {"mode": "raw", "raw": "{\n  \"name\":     \"City General Hospital (Updated)\",\n  \"location\": \"Chennai\",\n  \"capacity\": 600,\n  \"status\":   \"Active\"\n}"}
+          }
+        },
+        {
+          "name": "[Security] 403 - Doctor tries to create hospital",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/hospitals"},
+            "body": {"mode": "raw", "raw": "{\n  \"name\": \"Fake\", \"location\": \"X\", \"capacity\": 1, \"status\": \"Active\"\n}"},
+            "description": "Expected: 403 Forbidden"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "04 · Resources",
+      "item": [
+        {
+          "name": "Add Beds",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('resource_id', pm.response.json().resourceID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/resources"},
+            "body": {"mode": "raw", "raw": "{\n  \"hospitalID\": {{hospital_id}},\n  \"type\":       \"Beds\",\n  \"quantity\":   200,\n  \"status\":     \"Available\"\n}"}
+          }
+        },
+        {
+          "name": "Add Equipment",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/resources"},
+            "body": {"mode": "raw", "raw": "{\n  \"hospitalID\": {{hospital_id}},\n  \"type\":       \"Equipment\",\n  \"quantity\":   50,\n  \"status\":     \"Available\"\n}"}
+          }
+        },
+        {
+          "name": "Add Staff",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/resources"},
+            "body": {"mode": "raw", "raw": "{\n  \"hospitalID\": {{hospital_id}},\n  \"type\":       \"Staff\",\n  \"quantity\":   100,\n  \"status\":     \"Available\"\n}"}
+          }
+        },
+        {
+          "name": "List All Resources",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/resources"}
+          }
+        },
+        {
+          "name": "Filter by Hospital",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/resources?hospitalId={{hospital_id}}"}
+          }
+        },
+        {
+          "name": "Update Resource",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/resources/{{resource_id}}"},
+            "body": {"mode": "raw", "raw": "{\n  \"hospitalID\": {{hospital_id}},\n  \"type\":       \"Beds\",\n  \"quantity\":   250,\n  \"status\":     \"Available\"\n}"}
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "05 · Analytics",
+      "item": [
+        {
+          "name": "Hospital Analytics Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/analytics/hospitals"}
+          }
+        },
+        {
+          "name": "Hospital Capacity Report",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/analytics/reports/hospital-capacity"}
+          }
+        },
+        {
+          "name": "Resource Availability Report",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/analytics/reports/resource-availability"}
+          }
+        },
+        {
+          "name": "Resource Distribution Report",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/analytics/reports/resource-distribution"}
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "06 · Doctor Schedule",
+      "item": [
+        {
+          "name": "Add Availability Slot",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('schedule_id', pm.response.json().scheduleID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/schedules"},
+            "body": {"mode": "raw", "raw": "{\n  \"doctorId\":      {{doctor_id}},\n  \"hospitalId\":    {{hospital_id}},\n  \"availableDate\": \"2025-12-25\",\n  \"timeSlot\":      \"10:00:00\"\n}"}
+          }
+        },
+        {
+          "name": "Add Another Slot",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/schedules"},
+            "body": {"mode": "raw", "raw": "{\n  \"doctorId\":      {{doctor_id}},\n  \"hospitalId\":    {{hospital_id}},\n  \"availableDate\": \"2025-12-26\",\n  \"timeSlot\":      \"14:00:00\"\n}"}
+          }
+        },
+        {
+          "name": "Edit Slot",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/schedules/{{schedule_id}}"},
+            "body": {"mode": "raw", "raw": "{\n  \"doctorId\":      {{doctor_id}},\n  \"hospitalId\":    {{hospital_id}},\n  \"availableDate\": \"2025-12-25\",\n  \"timeSlot\":      \"11:00:00\"\n}"}
+          }
+        },
+        {
+          "name": "View Doctor Slots",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/schedules/doctor/{{doctor_id}}"}
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "07 · Appointments",
+      "item": [
+        {
+          "name": "Book Appointment",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('appointment_id', pm.response.json().appointmentID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{base_url}}/api/appointments/book"},
+            "body": {"mode": "raw", "raw": "{\n  \"patientID\":  {{patient_id}},\n  \"doctorID\":   {{doctor_id}},\n  \"hospitalID\": {{hospital_id}},\n  \"date\":       \"2025-12-25\",\n  \"time\":       \"11:00:00\"\n}"}
+          }
+        },
+        {
+          "name": "Doctor Views Schedule",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/appointments/doctor/{{doctor_id}}"}
+          }
+        },
+        {
+          "name": "Admin Views All Appointments",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/appointments"}
+          }
+        },
+        {
+          "name": "Admin Check-In Patient",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/appointments/{{appointment_id}}/checkin?adminId=1"}
+          }
+        },
+        {
+          "name": "Cancel Appointment",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{base_url}}/api/appointments/cancel"},
+            "body": {"mode": "raw", "raw": "{\n  \"appointmentID\": {{appointment_id}}\n}"}
+          }
+        },
+        {
+          "name": "[Security] 400 - Patient Cancels Another's Appointment",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{base_url}}/api/appointments/cancel"},
+            "body": {"mode": "raw", "raw": "{\n  \"appointmentID\": 999\n}"},
+            "description": "Expected: 400 or 404 — cannot cancel someone else's appointment"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "08 · Treatment & Medical Records",
+      "item": [
+        {
+          "name": "Record Treatment",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('treatment_id', pm.response.json().treatmentID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/treatments"},
+            "body": {"mode": "raw", "raw": "{\n  \"patientId\":      {{patient_id}},\n  \"doctorId\":       {{doctor_id}},\n  \"diagnosis\":      \"Hypertension Stage 1\",\n  \"prescription\":   \"Amlodipine 5mg once daily\",\n  \"treatmentNotes\": \"Reduce salt intake. Exercise daily.\",\n  \"status\":         \"Active\"\n}"}
+          }
+        },
+        {
+          "name": "Update Patient Record (Doctor)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/treatments/patients/{{patient_id}}"},
+            "body": {"mode": "raw", "raw": "{\n  \"updaterId\":   {{doctor_id}},\n  \"name\":        \"Ravi Kumar\",\n  \"contactInfo\": \"9000011111\",\n  \"status\":      \"Active\"\n}"}
+          }
+        },
+        {
+          "name": "[Security] 403 - Patient tries to record treatment",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{base_url}}/api/treatments"},
+            "body": {"mode": "raw", "raw": "{\n  \"patientId\": 1, \"doctorId\": 2, \"diagnosis\": \"Self-diagnosed\", \"prescription\": \"Rest\", \"status\": \"Active\"\n}"},
+            "description": "Expected: 403 Forbidden"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "09 · Compliance",
+      "item": [
+        {
+          "name": "Compliance Login (saves token)",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 200) { pm.collectionVariables.set('compliance_token', pm.response.json().token); pm.collectionVariables.set('jwt_token', pm.response.json().token); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "{{base_url}}/api/users/login"},
+            "body": {"mode": "raw", "raw": "{\n  \"email\":    \"comp@hcg.com\",\n  \"password\": \"comp123\"\n}"}
+          }
+        },
+        {
+          "name": "Create Compliance Record",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('compliance_record_id', pm.response.json().complianceID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{compliance_token}}"}],
+            "url": {"raw": "{{base_url}}/api/compliance?officerId={{compliance_id}}"},
+            "body": {"mode": "raw", "raw": "{\n  \"entityId\": {{appointment_id}},\n  \"type\":     \"Appointment\",\n  \"result\":   \"Pass\",\n  \"notes\":    \"All documentation verified and complete.\"\n}"}
+          }
+        },
+        {
+          "name": "Update Compliance Record",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{compliance_token}}"}],
+            "url": {"raw": "{{base_url}}/api/compliance/{{compliance_record_id}}?officerId={{compliance_id}}"},
+            "body": {"mode": "raw", "raw": "{\n  \"entityId\": {{appointment_id}},\n  \"type\":     \"Appointment\",\n  \"result\":   \"Fail\",\n  \"notes\":    \"Missing patient consent form.\"\n}"}
+          }
+        },
+        {
+          "name": "Search All Compliance Records",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{compliance_token}}"}],
+            "url": {"raw": "{{base_url}}/api/compliance"}
+          }
+        },
+        {
+          "name": "Filter by Type and Result",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{compliance_token}}"}],
+            "url": {"raw": "{{base_url}}/api/compliance?type=Appointment&result=Pass"}
+          }
+        },
+        {
+          "name": "Filter by Date Range",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{compliance_token}}"}],
+            "url": {"raw": "{{base_url}}/api/compliance?startDate=2025-01-01&endDate=2025-12-31"}
+          }
+        },
+        {
+          "name": "View Audit Logs (COMP-003)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{compliance_token}}"}],
+            "url": {"raw": "{{base_url}}/api/compliance/audit-logs"}
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "10 · Audit",
+      "item": [
+        {
+          "name": "Auditor Login (saves token)",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 200) { pm.collectionVariables.set('auditor_token', pm.response.json().token); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "{{base_url}}/api/users/login"},
+            "body": {"mode": "raw", "raw": "{\n  \"email\":    \"audit@hcg.com\",\n  \"password\": \"aud123\"\n}"}
+          }
+        },
+        {
+          "name": "Create Audit",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('audit_id', pm.response.json().auditID); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{auditor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/audits"},
+            "body": {"mode": "raw", "raw": "{\n  \"officerId\": {{auditor_id}},\n  \"scope\":     \"Q4 Hospital Compliance Review\",\n  \"findings\":  null,\n  \"status\":    null\n}"}
+          }
+        },
+        {
+          "name": "Update Audit (→ In-Progress)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{auditor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/audits/{{audit_id}}?requesterId={{auditor_id}}"},
+            "body": {"mode": "raw", "raw": "{\n  \"officerId\": {{auditor_id}},\n  \"scope\":     \"Q4 Hospital Compliance Review\",\n  \"findings\":  \"Initial review started. Documentation under review.\",\n  \"status\":    \"In-Progress\"\n}"}
+          }
+        },
+        {
+          "name": "Update Audit (→ Completed)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{auditor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/audits/{{audit_id}}?requesterId={{auditor_id}}"},
+            "body": {"mode": "raw", "raw": "{\n  \"officerId\": {{auditor_id}},\n  \"scope\":     \"Q4 Hospital Compliance Review\",\n  \"findings\":  \"3 minor violations found. All corrected on site.\",\n  \"status\":    \"Completed\"\n}"}
+          }
+        },
+        {
+          "name": "Audit Dashboard (all audits)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{auditor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/audits"}
+          }
+        },
+        {
+          "name": "Filter by Status",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{auditor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/audits?status=Completed"}
+          }
+        },
+        {
+          "name": "Get Audit Details",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{auditor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/audits/{{audit_id}}"}
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "11 · Notifications",
+      "item": [
+        {
+          "name": "Get Own Notifications (Patient)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{base_url}}/api/notifications/{{patient_user_id}}"}
+          }
+        },
+        {
+          "name": "Get Own Notifications (Doctor)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor_token}}"}],
+            "url": {"raw": "{{base_url}}/api/notifications/{{doctor_id}}"}
+          }
+        },
+        {
+          "name": "Admin Gets Any User Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{admin_token}}"}],
+            "url": {"raw": "{{base_url}}/api/notifications/{{patient_user_id}}"}
+          }
+        },
+        {
+          "name": "[Security] 400 - Patient Reads Another's Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": {"raw": "{{base_url}}/api/notifications/{{doctor_id}}"},
+            "description": "Expected: 400 — Access denied: you may only view your own notifications"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "12 · Program Dashboard & Reports",
+      "item": [
+        {
+          "name": "Manager Login (saves token)",
+          "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 200) { pm.collectionVariables.set('manager_token', pm.response.json().token); }"], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "{{base_url}}/api/users/login"},
+            "body": {"mode": "raw", "raw": "{\n  \"email\":    \"manager@hcg.com\",\n  \"password\": \"mgr123\"\n}"}
+          }
+        },
+        {
+          "name": "Program Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{manager_token}}"}],
+            "url": {"raw": "{{base_url}}/api/program/dashboard"}
+          }
+        },
+        {
+          "name": "Dashboard with Date Filter",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{manager_token}}"}],
+            "url": {"raw": "{{base_url}}/api/program/dashboard?startDate=2025-01-01&endDate=2025-12-31"}
+          }
+        },
+        {
+          "name": "Generate Hospital Report",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{manager_token}}"}],
+            "url": {"raw": "{{base_url}}/api/program/reports"},
+            "body": {"mode": "raw", "raw": "{\n  \"hospitalId\": {{hospital_id}},\n  \"scope\":      \"Hospital\"\n}"}
+          }
+        },
+        {
+          "name": "Generate Appointment Report",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{manager_token}}"}],
+            "url": {"raw": "{{base_url}}/api/program/reports"},
+            "body": {"mode": "raw", "raw": "{\n  \"hospitalId\": {{hospital_id}},\n  \"scope\":      \"Appointment\"\n}"}
+          }
+        },
+        {
+          "name": "Generate Treatment Report",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{manager_token}}"}],
+            "url": {"raw": "{{base_url}}/api/program/reports"},
+            "body": {"mode": "raw", "raw": "{\n  \"hospitalId\": {{hospital_id}},\n  \"scope\":      \"Treatment\"\n}"}
+          }
+        },
+        {
+          "name": "Generate Compliance Report",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{manager_token}}"}],
+            "url": {"raw": "{{base_url}}/api/program/reports"},
+            "body": {"mode": "raw", "raw": "{\n  \"hospitalId\": {{hospital_id}},\n  \"scope\":      \"Compliance\"\n}"}
+          }
+        }
+      ]
+    }
+
+  ]
+}
